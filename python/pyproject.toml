@@ -1,0 +1,18 @@
+[project]
+name = "recorder-sidecar"
+version = "0.1.0"
+description = "Transcription + todo extraction sidecar for the Recorder macOS app"
+requires-python = ">=3.11"
+dependencies = [
+    "parakeet-mlx>=0.4.1",
+    "boto3>=1.36",
+    "numpy>=1.26",
+    "soundfile>=0.12",
+    "google-api-python-client>=2.140",
+    "google-auth>=2.30",
+    "google-auth-oauthlib>=1.2",
+    "python-dotenv>=1.0",
+]
+
+[tool.uv]
+package = false

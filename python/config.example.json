@@ -1,0 +1,19 @@
+{
+  "user_name": "Alex Example",
+  "user_email": "alex@example.com",
+  "default_account": "work",
+  "accounts": {
+    "work": {
+      "emails": ["alex@example.com"],
+      "calendar_ids": ["primary", "alex@example.com"]
+    },
+    "client": {
+      "emails": ["alex@client-example.com"],
+      "calendar_ids": ["alex@client-example.com"]
+    }
+  },
+  "match_calendars": ["alex@example.com", "alex@client-example.com"],
+  "internal_domains": ["example.com"],
+  "data_root": "~/.config/recorder",
+  "mail_dir": "~/mail"
+}
