@@ -54,6 +54,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+import recorder_config  # noqa: F401  (loads ~/.config/recorder/.env)
+
 RECORDINGS = Path(
     os.getenv(
         "RECORDER_RECORDINGS_DIR",

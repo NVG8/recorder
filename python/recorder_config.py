@@ -17,6 +17,8 @@ import os
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
+
 CONFIG_PATH = Path(
     os.environ.get("RECORDER_CONFIG", "~/.config/recorder/config.json")
 ).expanduser()
@@ -34,10 +36,6 @@ def _load() -> dict[str, Any]:
 
 _CFG = _load()
 
-USER_NAME: str = os.environ.get("RECORDER_USER_NAME") or _CFG.get("user_name") or "the user"
-USER_FIRST_NAME: str = USER_NAME.split()[0] if USER_NAME != "the user" else "the user"
-USER_EMAIL: str = os.environ.get("RECORDER_USER_EMAIL") or _CFG.get("user_email") or ""
-
 # Where OAuth tokens, the OAuth client file, daily briefs and prep config live.
 DATA_ROOT = Path(
     os.environ.get("RECORDER_DATA_ROOT") or _CFG.get("data_root") or "~/.config/recorder"
@@ -47,6 +45,15 @@ BRIEFS_DIR = DATA_ROOT / "briefs"
 LOGS_DIR = DATA_ROOT / "logs"
 ENV_FILE = DATA_ROOT / ".env"
 CLIENT_SECRETS = CONFIG_DIR / "google_oauth_client.json"
+
+# A Finder-launched .app does not see variables exported in your shell profile,
+# so AWS_PROFILE, BEDROCK_REGION and friends go in this file instead. Variables
+# already set in the environment win.
+load_dotenv(ENV_FILE, override=False)
+
+USER_NAME: str = os.environ.get("RECORDER_USER_NAME") or _CFG.get("user_name") or "the user"
+USER_FIRST_NAME: str = USER_NAME.split()[0] if USER_NAME != "the user" else "the user"
+USER_EMAIL: str = os.environ.get("RECORDER_USER_EMAIL") or _CFG.get("user_email") or ""
 
 RECORDINGS_DIR = Path(
     os.environ.get("RECORDER_RECORDINGS_DIR")

@@ -2,6 +2,10 @@
 
 Usage:
   uv run transcribe.py <audio> [--mic <mic_path>] [--mix <other>] [--model <hf-id>]
+  uv run transcribe.py --download     # fetch the model once, before first use
+
+The app runs this with Hugging Face network access switched off, so the model
+must already be in the local cache. `--download` puts it there.
 
 Speaker attribution (`--mic`, the app's default):
   Pass the system-output track as <audio> and the microphone track via --mic.
@@ -311,7 +315,7 @@ def _run_single(model, audio: Path, mix: Path | None) -> int:
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("audio", type=Path, help="Primary (system-output) audio track.")
+    p.add_argument("audio", type=Path, nargs="?", help="Primary (system-output) audio track.")
     p.add_argument("--mic", type=Path, default=None,
                    help="Microphone track. When it and `audio` both carry speech, "
                         "produces a speaker-labeled (You/Remote) transcript.")
@@ -319,7 +323,16 @@ def main() -> int:
                    help="Legacy: mix this track with `audio` to mono and transcribe once "
                         "(unlabeled).")
     p.add_argument("--model", default=DEFAULT_MODEL)
+    p.add_argument("--download", action="store_true",
+                   help="Download the model into the local cache and exit.")
     args = p.parse_args()
+
+    if args.download:
+        from_pretrained(args.model)
+        print(f"model ready: {args.model}", file=sys.stderr)
+        return 0
+    if args.audio is None:
+        p.error("audio is required unless --download is given")
 
     if not args.audio.exists():
         print(f"audio not found: {args.audio}", file=sys.stderr)
@@ -333,6 +346,12 @@ def main() -> int:
         model = from_pretrained(args.model)
     except Exception as e:
         print(f"model load failed: {type(e).__name__}: {e}", file=sys.stderr)
+        if os.environ.get("HF_HUB_OFFLINE") == "1":
+            print(
+                "The model is not in the local cache and the app runs offline. "
+                "Run once: cd python && uv run python transcribe.py --download",
+                file=sys.stderr,
+            )
         return 5
 
     mic = args.mic

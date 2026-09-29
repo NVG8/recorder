@@ -60,18 +60,32 @@ python/                      uv-managed sidecar, invoked from Swift by subproces
 - macOS 14+ on Apple Silicon
 - Xcode Command Line Tools (`xcode-select --install`)
 - [`uv`](https://docs.astral.sh/uv/)
-- AWS credentials with Bedrock access to Claude in your region
+- An AWS account with Bedrock model access turned on for Claude Sonnet 4.5
+  and Claude Haiku 4.5 (Bedrock console → Model access)
 
 ## Setup
 
 ```sh
-cd python && uv sync && cd ..
+git clone https://github.com/NVG8/recorder.git && cd recorder
+
+cd python
+uv sync
+uv run python transcribe.py --download   # the model, about 600 MB, once
+cd ..
+
 ./scripts/build.sh
 open build/Recorder.app
 ```
 
-The first transcription downloads `mlx-community/parakeet-tdt-0.6b-v2` from
-Hugging Face (about 600 MB). Set `HF_TOKEN` to avoid rate limits.
+The model download is a separate step on purpose. The app runs transcription
+with Hugging Face network access switched off, so it never downloads anything
+on its own; without this step the first transcription fails and tells you to
+run it. Set `HF_TOKEN` if the download is rate-limited.
+
+**AWS credentials.** The app reads the standard AWS credential chain. The
+simplest setup is a `default` profile in `~/.aws/credentials` with a region in
+`~/.aws/config`. To use a named profile or another region, put it in
+`~/.config/recorder/.env` (see below), not your shell profile.
 
 On first launch macOS asks for **Screen Recording** permission, which it
 requires even for audio-only capture, and **Microphone**. Grant both in
@@ -110,14 +124,24 @@ uv run python google_auth.py reauth --all    # authorize
 | `RECORDER_CONFIG` | `~/.config/recorder/config.json` | Config file |
 | `RECORDER_DATA_ROOT` | `~/.config/recorder` | Tokens, `.env`, daily briefs |
 | `RECORDER_USER_NAME` / `RECORDER_USER_EMAIL` | from config | Who "you" are |
-| `RECORDER_ACCOUNT` | `default_account` | Account the prep panel reads |
+| `RECORDER_ACCOUNT` | `default_account` | Account the prep panel reads (prefer `default_account` in config) |
+| `AWS_PROFILE` | `default` | AWS credentials profile |
 | `BEDROCK_REGION` | `us-east-1` | |
 | `BEDROCK_MODEL_ID` | `us.anthropic.claude-sonnet-4-5-20250929-v1:0` | Extraction model |
 | `EMAIL_SEARCH_BACKEND[_<ACCOUNT>]` | `notmuch` | `gmail` or `notmuch` for prep email |
 | `RECORDER_PYTHON_DIR` | bundled | Run the sidecar from source during dev |
 
-The `.app` inherits the environment of whatever launches it. Variables can also
-go in `~/.config/recorder/.env`.
+An app opened from Finder, the Dock or `open` does **not** see variables
+exported in `.zshrc` or `.bash_profile`. Put them in `~/.config/recorder/.env`
+instead, one `NAME=value` per line; every sidecar script loads it. Variables
+already in the environment win, and `RECORDER_CONFIG` / `RECORDER_DATA_ROOT`
+can't go there, since they decide where the file is.
+
+```sh
+# ~/.config/recorder/.env
+AWS_PROFILE=work
+BEDROCK_REGION=us-west-2
+```
 
 ### Daily briefs
 
