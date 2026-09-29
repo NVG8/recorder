@@ -1,10 +1,9 @@
 """One place that knows about every Google OAuth token these projects use.
 
-Credentials had drifted across three projects and six files, with overlapping
-scopes and no way to tell a live token from a dead one. The Drive token's
-refresh had been failing since March and nothing surfaced it for five months —
-it was only found by hand-running a Drive call in August. That is the failure
-this module exists to prevent.
+Token files tend to drift across projects, with overlapping scopes and no way
+to tell a live token from a dead one. A refresh token can fail silently for
+months before anything surfaces it. That is the failure this module exists to
+prevent.
 
 Deliberately a *registry*, not a migration: the token files stay exactly where
 they are, because other tools on the same machine may read them from fixed
@@ -108,8 +107,7 @@ def check(spec: TokenSpec, deep: bool = False) -> dict[str, Any]:
 
     `deep` forces a refresh even when the cached access token still looks valid.
     Access tokens live about an hour, so a shallow check can call a token with a
-    *revoked* refresh token healthy — which is exactly how the dead Drive token
-    stayed invisible. Use deep when the answer matters.
+    *revoked* refresh token healthy. Use deep when the answer matters.
     """
     result: dict[str, Any] = {
         "name": spec.name,

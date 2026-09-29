@@ -912,10 +912,6 @@ def dedupe_series_transcripts(items: List[Dict[str, str]]) -> List[Dict[str, str
     return out
 
 
-# ── Salesforce ───────────────────────────────────────────────────
-
-
-
 # ── Internal-meeting allowlist ───────────────────────────────────
 
 def load_internal_meetings_allowlist(logger: logging.Logger) -> List[Dict[str, Any]]:
@@ -930,47 +926,3 @@ def load_internal_meetings_allowlist(logger: logging.Logger) -> List[Dict[str, A
         logger.warning("%s is not a JSON list; ignoring", INTERNAL_MEETINGS_FILE)
         return []
     return data
-
-
-# ── LinkedIn company URL (subprocess to LI venv) ─────────────────
-
-
-
-
-
-
-
-# ── Synthesis ────────────────────────────────────────────────────
-
-
-
-
-
-
-
-# ── Brief assembly ───────────────────────────────────────────────
-
-
-
-
-
-# ── Email digest via msmtp ───────────────────────────────────────
-
-
-
-
-
-
-
-
-
-
-
-# ── Orchestration ────────────────────────────────────────────────
-
-
-
-
-
-
-

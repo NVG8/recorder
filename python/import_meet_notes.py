@@ -92,8 +92,7 @@ def doc_modified_at(svc, file_id: str) -> dt.datetime | None:
 def reused_file_ids(events: list[dict[str, Any]]) -> set[str]:
     """File ids attached to more than one event.
 
-    A recurring series can carry a single doc on every instance — one meeting
-    here has the same November doc on all 12 instances from March to August.
+    A recurring series can carry a single doc on every instance, months old.
     Importing that would file stale notes under today's meeting, so when a doc
     can't be tied to one event we decline it and leave the email path (which is
     genuinely per-instance) to cover the meeting.

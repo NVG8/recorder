@@ -3,9 +3,8 @@ import AppKit
 
 /// Persistent notice that a Google credential has stopped working.
 ///
-/// Deliberately not dismissible: a dead token silently degrades prep, imports,
-/// and the weekly update, and the last one went unnoticed for five months. It
-/// clears itself when the credential is fixed.
+/// Deliberately not dismissible: a dead token silently degrades prep and
+/// imports. It clears itself when the credential is fixed.
 struct AuthIssueBanner: View {
     @ObservedObject var model: AppModel
     @State private var copied = false

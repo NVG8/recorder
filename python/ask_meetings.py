@@ -5,29 +5,24 @@ the *whole* archive, and FULL DETAIL (attendees, summary, transcript) for the
 meetings most likely to answer it — ranked by BM25, plus any meeting whose date
 the question names. `MAX_MEETINGS=0` sends full detail for everything.
 
-The split follows where the bulk is. Transcripts are ~208K tokens and are what
-needs narrowing; the structured layer is ~25K and is what aggregate questions
-need in full. Filtering alone broke "what am I still waiting on" — the top 40
-meetings held 16 of 39 outstanding items — because that question has no
-distinctive terms to match and its answer is spread everywhere.
+The split follows where the bulk is. Transcripts are most of the tokens and are
+what needs narrowing; the structured layer is small and is what aggregate
+questions need in full. Filtering alone breaks "what am I still waiting on",
+because that question has no distinctive terms to match and its answer is
+spread everywhere.
 
 Why filter at all, given it all fits: **accuracy degrades before capacity does.**
-At ~200 structurally similar meetings, a broad question ("what was decided, and
-what did I commit to?") came back citing the right meeting with another
-meeting's content; the same question over the top 40 answers correctly with
-every citation verified. Capacity was never the binding constraint.
+Across a large archive of structurally similar meetings, a broad question
+("what was decided, and what did I commit to?") can come back citing the right
+meeting with another meeting's content. The same question over the top 40
+answers correctly.
 
-Sizing, measured rather than assumed: the archive crossed 200K tokens in August
-2026, which is Bedrock's *default* window for this model — the long-context beta
-(`LONG_CONTEXT_BETA`) lifts it to 1M. An earlier note here assumed 1M by default
-and was wrong by a factor of five.
+Sizing: Bedrock's *default* window for this model is 200K tokens; the
+long-context beta (`LONG_CONTEXT_BETA`) lifts it to 1M.
 
 Filtering trades away the prompt cache, since the prefix now varies per
-question. That is cheaper anyway at observed usage: 40 meetings is ~18% of the
-archive, so an uncached filtered question costs about $0.11 against $0.78 to
-warm the full-archive cache and $0.06 per question after. A five-question
-session runs ~$0.56 filtered vs ~$1.03 cached-full, and one-off questions —
-the common case — are ~7× cheaper.
+question. That is usually cheaper anyway: most questions are one-offs, and an
+uncached filtered question costs far less than warming a full-archive cache.
 
 Which is why citations are verified, not trusted. Both halves matter: the
 recording must exist, *and* the quote must actually appear in it. Checking only
@@ -115,8 +110,8 @@ short — one sentence is plenty.
 - If you cannot produce a real quote for a claim, leave the claim out.
 """
 
-# The output contract lives in the user turn, not the system prompt. With ~130K
-# tokens of archive between the two, an instruction at the top of the system
+# The output contract lives in the user turn, not the system prompt. With a
+# large archive between the two, an instruction at the top of the system
 # prompt is too far from the point of generation to be followed reliably — the
 # model answers in prose and ignores the schema. Restating it adjacent to the
 # question fixes that, and it keeps the volatile part of the request outside the
@@ -253,7 +248,7 @@ def render_meeting(meeting: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 # Relevance pre-filter
 #
-# Sending all ~200 meetings fits the context window but degrades the answer:
+# Sending every meeting can fit the context window but degrades the answer:
 # structurally similar meetings blend together, and a broad question comes back
 # citing the right meeting with another meeting's content. Narrowing to the
 # meetings a question is actually about fixes that.
@@ -340,9 +335,9 @@ def dates_in_question(question: str) -> set[str]:
 def date_hint(question: str, meetings: list[dict[str, Any]]) -> str:
     """Resolve relative dates in the question and name the meetings they hit.
 
-    The model handles the arithmetic fine — asked "yesterday" it correctly says
-    "Tuesday, 05 August 2026" — but then fails to *find* that date among 200
-    archive entries and concludes no such meeting exists. The same question with
+    The model handles the arithmetic fine — asked "yesterday" it names the right
+    date — but then can fail to *find* that date among hundreds of archive
+    entries and conclude no such meeting exists. The same question with
     an explicit date works, because the date is then a literal string to scan
     for.
 
@@ -478,12 +473,12 @@ def build_index(meetings: list[dict[str, Any]]) -> str:
 
     Retrieval answers "what happened in X" but structurally cannot answer
     "what am I still waiting on" — that question has no distinctive terms to
-    match, and its answer is spread across the whole archive. Measured: the top
-    40 meetings held 16 of 39 outstanding `waiting_on` items.
+    match, and its answer is spread across the whole archive. The top 40
+    meetings by relevance hold only a fraction of the outstanding items.
 
     So the structured layer ships whole and only the transcripts get filtered.
     That split works because it is where the bulk actually is: every decision
-    and todo across 200+ meetings is ~25K tokens, against ~208K of transcript.
+    and todo is a small fraction of the transcript tokens.
     """
     lines: list[str] = []
     for meeting in meetings:
@@ -558,9 +553,9 @@ def _converse(
         }
     ]
     inference = {"maxTokens": 4096, "temperature": 0.0}
-    # Bedrock defaults this model to a 200K window, and the archive passed that
-    # in August 2026. The long-context beta lifts it to 1M, which is what keeps
-    # the send-everything design viable — without it this needs real retrieval.
+    # Bedrock defaults this model to a 200K window, which a large archive
+    # passes. The long-context beta lifts it to 1M, which is what keeps the
+    # send-everything design viable — without it this needs real retrieval.
     extra = {"anthropic_beta": [LONG_CONTEXT_BETA]}
 
     def call(system: list[dict], fields: dict | None) -> dict:

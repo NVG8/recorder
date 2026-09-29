@@ -20,8 +20,7 @@ struct RecorderApp: App {
             // Pull in any Gemini Notes that landed since we last looked. Its own
             // debounce is much longer than prep's, so this is rarely a no-op cost.
             model.importGeminiNotesIfStale()
-            // Daily deep check — the one thing that would have caught the Drive
-            // token dying in March rather than five months later.
+            // Daily deep check, so a dead Google token surfaces within a day.
             model.refreshAuthStatus()
         }
 

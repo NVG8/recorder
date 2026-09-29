@@ -76,10 +76,8 @@ func webURL(_ string: String) -> URL? {
 
 /// Health of one Google OAuth token, as reported by `google_auth.py status`.
 ///
-/// Surfaced in the UI because the failure mode here is silence: the Drive token's
-/// refresh broke in March and nothing noticed until August, and a second token
-/// (Sheets) turned out to have been dead too. A credential that fails quietly
-/// degrades prep, imports, and the weekly update without ever raising an error
+/// Surfaced in the UI because the failure mode here is silence: a credential
+/// that fails quietly degrades prep and imports without ever raising an error
 /// the user sees.
 struct GoogleTokenStatus: Identifiable, Codable {
     var id: String { name }
@@ -399,8 +397,7 @@ final class AppModel: ObservableObject {
     ///
     /// Notes arrive minutes-to-hours after a meeting, so a few checks a day is
     /// ample — and each one costs a mail round-trip plus an extraction per new
-    /// note. Nothing ran this automatically before, which is why imports had
-    /// silently fallen behind.
+    /// note.
     func importGeminiNotesIfStale() {
         guard !isBusy else { return }
         if let last = geminiImportedAt,

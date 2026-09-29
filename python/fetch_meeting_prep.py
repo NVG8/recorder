@@ -127,7 +127,7 @@ def find_brief_for_meeting(meeting: prep.Meeting) -> Brief | None:
 def parse_brief(path: Path) -> Brief:
     """Parse a daily brief into section buckets.
 
-    The format is stable (see briefs/2026-05-27/*.md): an H1 title, a few
+    The format is stable (see the README's "Daily briefs"): an H1 title, a few
     metadata bullets, then `## Why this meeting matters`, `## Background`,
     `## Talking points`, `## Open questions`, `## Suggested ask` sections.
     """
